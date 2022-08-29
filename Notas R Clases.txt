@@ -1,0 +1,670 @@
+-------
+NOTAS R
+-------
+# <- escribir comentarios
+# titulo ---- <- crear titulos
+## subtitulo ---- <- crear subtitulos
+ctrl + enter <- ejecutar codigo
+ctrl + shift + r <- generar secciones en R. Tambien se hace con # nombre ----
+ctrl + shift + c <- comentar todo
+`algo` <- se usan estas comillas para variables con espacios en su nombre
+F1 <- se usa sobre una palabra y le genera directamente un ?variable 
+
+----------------------------
+TIPOS Y ESTRUCTURAS DE DATOS
+----------------------------
+integer - numero entero - -1, 0 , 1
+numeric - numeros reales - -0.5, 1/2
+character - texto - "algo"
+boolean/logical - verdadero o false - TRUE, FALSE	
+factor - dato categorico
+date - fechas
+complex - numeros complejos
+float o double - numeros reales con comas o puntos
+
+class() <- muestra la clase del objeto
+as.numeric() 	<- convierte en numero
+as.string()		<- convierte en texto
+as.character()	<- convierte en caracter
+as.factor()		<- convierte en factor
+as.Date()		<- convierte en fecha
+
+# VECTORES
+vector[1] <- extraigo el elemento x del vector, donde x es un numero
+vector[1:3] <- extraigo los elementos del 1 al 3
+seq(numero_inicial, numero_final, de_cuanto_en_cuanto) <- genera una secuencia segun estos tres argumentos
+length(vector) <- cuenta el numero de elementos en el vector
+cbind(vector1, vector2) <- une dos vectores de igual longitud como columnas
+rbind(vector1, vector2) <- une dos vectores de igual longitud segun filas  
+
+# MATRICES
+matrix(1:16, ncol = 4, byrow = TRUE) <- crea una matriz de 4 por 4, completada por filas
+matrix(letters[1:16], ncol = 4) <- lo mismo pero para letras
+matrix[1, ] <- dame todas las columnas de la primera fila en forma de vector
+matrix[ , 1] <- dame todas las filas de la primera columna en forma de vector
+matrix[["nombre columna"]] <- dame todas las filas de la primera columna en forma de dataframe
+matrix[1:3, 1] <- dame las filas de la 1 a la 3 de la primera columna
+matrix[c(1, 4), 1] <- dame las filas 1 y 4 de la primera columna
+dim(matrix) <- entrega la dimension de la matriz
+t(matrix) <- traspone una matriz
+
+# DATAFRAME
+dataframe(vector1, vector2, ...) <- crea un dataframe donde cada vector es una columna
+dataframe$variable[1] <- me trae el primer elemento de la columna variable del dataframe
+dataframe[1, 1] <- me trae el elemento 1 del dataframe
+dataframe$variable <- c(..., ..., ...) <- agrega una nueva columna se la estructura de la variable
+
+# TIBBLE
+as_tibble(dataframe) <- convierte un dataframe en un tibble
+data.frame < tibble < data.table en cuanto a rapidez
+
+#LISTAS
+mi_lista <- list(elemento1, elemento2, ...) <- en una lista se pueden guardar vectores, matrices, dataframes, etc
+mi_lista[[1]] <- me trae el elemento 1 de la lista
+mi_lista$elemento_1 <- tambien me trae el elemento 1
+
+------------------------
+INTRODUCCION A TIDYVERSE
+------------------------
+Tidyverse es un conjunto de paquetes que contiene las librerias: <- install.packages("tidyverse") 
+- DPLYR
+- GGPLOT2
+- FORCATS
+- TIBBLE
+- READR
+- READXL
+- STRINGR
+- TIDYR
+- PURRR
+- LUBRIDATE
+- OPENXLSX
+
+rm(objeto) <- remueve objetos
+na.rm = TRUE <- remueve valores faltantes y se utiliza para realizar calculos
+na.omit(dataframe) <- remueve todos los datos faltantes del dataframe
+str(dataframe) <- entrega la estructura del dataframe
+seq(0, 10, 2) <- entrega una secuencia de numeros que parte en el cero, termina en 10, y va de 2 en 2 
+glimpse(dataframe) <- entrega una vista del dataframe
+head(dataframe) <- muestra las primeras filas del dataframe
+tail(dataframe) <- muestra las ultimas filas del dataframe
+view(dataframe) <- genera una nueva ventana con el set de datos
+colnames(dataframe) <- sirve para ver el nombre de las variables
+is.na() <- entre los missing values
+separate(palabra1_palabra2, into = c("palabra1", "palabra2"), sep = "_", convert = TRUE)	<- se usa luego de janitor::clean_names()
+
+#IMPORTAR ARCHIVOS
+read.table("ruta/nombre del archivo") <- archivos txt
+read_csv("ruta/nombre del archivo") <- archivos csv, libreria READR, por defecto viene con sep = ","
+read_csv2("ruta/nombre del archivo") <- achivos csv, libreria READR, por defecto viene con sep = ";"
+fread("ruta/nombre del archivo", encoding = "Latin-1") <- importa datos permitiendo cambiar la codificacion
+gsheet2tbl("direccion del archivo en drive") <- archivos de google drive (sin descargar), libreria GSHEET
+read_excel("ruta/nombre del archivo", sheet = "nombre o numero de la hoja", skip = numero de filas que me saltare) <- archivos excel, paquete READXL
+clean_names(dataframe) <- remueve caracteres especiales y agregar _ en los espacios, libreria JANITOR
+read.xlsx("ruta/nombre del archivo", fillMergedCells = TRUE para celdas combinadas) <- archivos excel con problemas, libreria OPENXLSX
+fill(columna, .direction = "down" o "up") <- sirve para completar columnas hacia arriba o hacia abajo
+
+#DPLYR
+%>% <- operador pipe, todos los cambios son secuenciales
+select(starts_with("algo"), ends_with("algo"), contains("algo")) <- seleccionar columnas que empiecen, terminen o contengan algo
+select(-columna) <- seleccionar todas las columnas menos esta
+filter(columna == "algo", !is.na(columna)) <- filtrar columnas por algo y que no tengan NA (!)
+mutate(variable) <- generar una nueva variable
+slice(40:60) <- selecionar las filas desde la 40 a la 60
+count(variable) <- contar el numero de observaciones
+rename(variable) <- renombrar variables
+arrange(variable) <- ordena el dataframe segun la variable, por default es ascendente. Para descendente se usa desc() adentro
+group_by(variable) <- genera un grupo segun la variable
+summarise(variable = mean(variable)) <- se usa en conjunto con group_by para generar mediciones
+case_when(variable condicion ~ "nombre", <- las condiciones deben ir desde la mas particular a la mas global
+	 variable condicion ~ "nombre2",
+	 TRUE ~ "otro") <- sirve para generar etiquetas, sobre todo para variables categoricas
+
+#CRUCE DE TABLAS CON DPLYR
+load("archivo .RData") <- se usa con archivos
+inner_join(tabla1, tabla2, by = "llave") <- me quedo solo con los datos que coindicen en ambas bases
+left_join(tabla1, tabla2, by = "llave") <- me quedo con todos los datos de la tabla izquierda, y pego la otra con posibles NA
+right_join(tabla1, tabla2, by = "llave") <- me quedo con todos los datos de la tabla derecha, y pego la otra con posibles NA
+full_join(tabla1, tabla2, by = "llave") <- me quedo con todos los datos de ambas tablas, con posibles NA en ambas
+anti_join(tabla1, tabla2, by = "llave") <- me quedo con todos los datos que no estan en la tabla izquierda
+- argumentos: suffix = c("algo", "otra_cosa") <- sirve para agregar sufijos a columnas con el mismo nombre
+
+#STRINGR 
+str_detect(objeto, "patron") <- permite detectar palabras que contegan ese patron dentro del objeto
+str_remove(objeto, "patron") <- remueve palabras de un objeto segun el patron (para remover puntos se usa "\\.")
+str_extract(objeto, "patron") <- extrae unicamente las palabras designadas eb el patron
+str_replace(objeto, "patron_antiguo", "patron_nuevo") <- reemplaza una palabra antigua por otra nueva segun el patron
+str_extract_all(), str_remove_all(), str_replace_all() <- hacen lo mismo pero mas de una vez dentro del mismo elemento del objeto
+names(dataframe) %>% str_subset("patron") <- busca todas las columnas que contengan el patron
+str_split(objeto, ",") <- separa una palabra del objeto en multiples palabras segun comas
+str_trim(objeto) <- elimina los espacios que hay al principio y al final
+str_to_lower(objeto) <- convierte el texto en minusculas
+str_to_upper(objeto) <- convierte el texto en mayusculas
+
+#FECHAS
+as.Date("año/mes/dia", format = "%d/%m/%Y") <- para transformar objetos a formato fecha (dia, mes, año)
+Sys.time() <- entrega la hora actual en el sistema
+Sys.Date() <- entrega la fecha actual en el sistema
+
+#LUBRIDATE
+sirve para trabajar con fechas
+today() <- entrega la fecha de hoy
+dmy(objeto con formato fecha) <- lo transforma a "año-dia-mes"
+parse_date_time(objetos con formatos distintos de fecha, c("dmy", "dym")) <- transforma todos los elementos del objeto x segun c() 
+interval(today(), x) %>% as.period() <- entrega un intervalo entre hoy y la fecha de x, como periodo 
+
+----------------------------------------------
+ESTRUCTURAS DE CONTROL Y CREACION DE FUNCIONES
+----------------------------------------------
+%in% <- dentro de
+round(1) <- redondear a la decima
+pull(variable) <- se usa para retornar un vector de uno o mas elementos (en la mayoria, solo el valor), en lugar de un tibble (base de datos)
+next <- permite saltar la ejecucion de un bucle
+break <- permite termina la ejecucion de un bucle
+paste0("palabra1", "palabra2") <- funciona como una concatenacion
+args(funcion) <- muestra todos los argumentos de la funcion
+variable[1] <- sirve para elegir una lista en particular
+varialbe[[1]] <- sirve para elegir el elemento 1 de una lista en particular
+n()	<- numero de observaciones
+abs() 	<- valor absoluto
+sum()	<- suma
+mean()	<- promedio
+sd()	<- desviacion estandar
+aov(variable1 ~ variable2, data = variable) <- test anova
+
+#MUESTREO
+sample_n(size = x, replace = FALSE) <- muestra aleatoria de tamaño x, sin reemplazo
+
+#FUNCION DE RESUMEN
+resumen <- function(x){
+	x %>%
+	summarise(variable1 = n(), variable2 = mean(algo, na.rm = TRUE) 
+}
+resumen(variable)
+
+#IF & IFELSE
+if(x condicion){
+	print("algo")		<- cada espacio separado por un tab se denomina "identacion"
+} else {
+	print("otra cosa")
+}
+ifelse(x condicion,
+	"algo",
+	"otra cosa")		<- ifelse es una forma resumida de escribir if y else por separado
+
+#FOR
+for (i in objeto) {		<- donde objeto por lo general es algo del tipo 1:10, en general el for no es recomendado
+	funcion[i] o "algo"[i]  <- for() se usa especialmente cuando mi resultado actual depende del anterior, de lo contrario puedo usar apply()
+}
+
+#WHILE
+while(variable condicion) {
+	funcion
+	print(variable)
+}
+
+#CREACION DE FUNCIONES
+nombre <- function(variable = 0, variable2 = FALSE){			<- partimos de un caso base, donde la variable2 = 0
+	if(variable2 == TRUE){
+	variable = variable + runif()
+	}
+	resultado <- case_when(variable == 0 ~ "algo",
+			       variable == 1 ~ "otra cosa",
+			       ...)
+	return(list(resultado = resultado, variable = variable )	<- se usa el return para retornar un elemento y no todo el dataframe
+}									<- aux <- nombre(variable == numero) usamos esto al final
+									   aux$resultado o aux$variable      y esto para obtener los resultados
+
+#APLICACION DE FUNCIONES
+library(datos)
+library(data.table)
+apply() (2 formas): 							<- aplica una funcion a una matriz, por filas o por columnas
+1: apply(dataframe[,1:4], MARGIN = 1, FUN = function(x){sum(x, na.rm = TRUE)}) <- MARGIN = 1 es para filas, 2 es para columnas
+2: mi_suma <- function(x){
+		valor_suma = sum(x, na.rm = TRUE) %>% 
+		return(valor_suma)					<- return() sirve para imprimir el resultado y ademas almacenarlo
+	      }
+	      apply(dataframe[, 1:4], MARGIN = 2, FUN = mi_suma)
+tapply() (2 formas):							<- aplica una funcion a un vector, segregando por INDEX
+1: tapply{
+	X = dataframe$variable,
+	INDEX = dataframe$variable_grupo,
+	FUN = mean							<- se debe usar mean sin parentesis, porque estoy llamando a la funcion
+}
+2: dataframe %>%
+	group_by(variable) %>%
+	summarise(variable = mean(variable))
+lapply(X = variable_lista, FUN = median)				<- aplica una funcion a los elementos de una lista, y retorna una lista
+sapply(X = variable_lista, FUN = median)				<- aplica una funcion a los elementos de una lista, y retorna un vector
+
+#PURRR
+contiene funciones para trabjar de forma vectorial, sin tener que aplicar bucles
+map(objeto, .f = function(x){})	<- equivalente a lapply(), permite aplicar funciones a listas o vectores, y retorna distintas cosas:
+map_...	<- chr (vector de caracteres), dbl (vector numerico), dfc (dataframe columns), dfr(dataframe rows), int (enteros), lgl (vector logico) 		
+
+#CARGAR MULTIPLES ARCHIVOS CON CODIFICACION SIMILAR
+dir("ruta") <- me permite conocer el nombre de todos los archivos que tengo en mi directorio
+dir.create("nombre_carpeta") <- crea una carpeta dentro del directorio
+1: utilizando read.csv:
+dataframe <- dir("ruta") %>%
+	map_dfr(.f = function(x){
+		paste0("ruta//", x) %>%
+		read_csv()
+	})
+2: utilizando data.table								<- data.table es mucho mas rapido que read_csv()
+dataframe <- dir("ruta") %>%
+	map_dfr(.f = function(x){
+		paste0("ruta//", x) %>%
+		fread(encoding = "UTF-8" o "LATIN-1", select = c("columna1", "columna2", ...))	<- para que lea ñ y tilde
+	})
+
+#NEST
+nest()		<- comprime la base de datos a una anidada, de modo que cada fila representa una base de datos diferente, se usa despues de group_by
+group_nest()	<- equivalente a realizar un group_by() y luego un nest(), se genera una variable data	
+unnest()	<- descomprime la base de datos
+
+#SUBIR BASES DE DATOS A MI DIRECTORIO
+dataframe %>%
+	group_nest(variable_grupo) %>%					<- crear la data
+	mutate(file = paste0("ruta//", "palabra2", ".csv")) %>%		<- crear columna nueva con nombres para cada dataframe
+	select(x = data, file = file) %>%				<- x y file son argumentos del select que deben coincidir con mis variables
+	pwalk(write_csv)						<- genero los archivos
+
+----------------------
+VISUALIZACION DE DATOS
+----------------------
+library(patchwork)	<- permite ordenar multiples graficos en la pantalla
+library(datos)		<- bases de datos de R en español
+library(ggcorrplot)	<- para graficos de correlaciones
+library(showtext)	<- nuevos temas para los graficos - requiere inmediatamente la funcion showtext_auto() para poder usar fuentes descargadas
+library(ggcorrplot)	<- sirve para animar graficos de linea
+library(plotly)		<- transformar un grafico de ggplot a otro interactivo de tipo html
+https://r-graph-gallery.com/	<- todos los tipos de graficos en R
+
+#GGPLOT2
+ggplot se conforma por capas:
+	tema/facetas/coordenadas/escalas/capas/datos
+ggplot(dataframe, aes(x = variable, y = variable)) + 			<- seleccionar data y ejes
+	geom_algo(color = "algo", fill = "algo", col = "white") +	<- tipo de grafico y color
+	labs(title = "algo", x = "algo", y = "algo") + 			<- etiquetas 
+	theme_algo() )							<- temas, tambien puede cambiar el texto de los ejes
+geom_histogram(fill = "algo", col = "algo") 				<- histograma
+geom_boxplot(fill = "algo") 						<- cuantiles y mediana
+geom_bar(fill = "algo", aes(y = ..count../..prop../..density..))	<- barras, ..funcion.. sirve para ejecutar funciones en ggplot
+geom_point(alpha = 0.5)							<- scatter plot (de puntos o dispersion), alpha es para transparencia
+geom_line()								<- grafico de linea
+geom_smooth(method = "lm")						<- linea de tendencia
+geom_errorbar(aes(ymin = avg - stdev, ymax = avg + stdev))		<- barra de error
+coord_polar()								<- transforma el grafico a uno de torta
+coord_flip()								<- voltear el eje y con el eje x
+
+windowsFonts()	<- muestra los tipos de fuentes en mi sistema
+font_add_google("nombre del tema", "nombre del tema")	<- me permite descargar y usar una fuente de google
+ggplot() %>% theme(plot.title o cualquier elemento del grafico = element_text(family = "tipo de letra"))
+ggcorrplot(matriz de correlacion) <- crea graficos de correlacion, ates se requiere variable = cor(variable) para crear la matriz
+ggplot() + facet_wrap(~ variable_categorica, scales = "free_y") <- permite crear multiples graficos, dejando libre la escala del eje y
+ggplot() + facet_grid() <- permite crear grupos de graficos con dos variables, mientras que facet_wrap permite solo una
+ggplot() + geom_bar(stat = "identity") <- permite graficar los datos como aparecen en la base, siempre que ya vengan agrupados
+ggplot() + scale_x_continuous(labels = comma) <- tambien puede ser dollar, percent, scientific, libreria SCALES
+(grafico1 + grafico2) / grafico3 <- libreria PATCHWORK, muestra dos graficos arriba y uno abajo, sirve para ubicarlos de distinta forma
+GGally::ggpairs(dataframe) <- genera mutiples graficos para un dataframe, solo para pequeños conjuntos de datos, libreria GGALLY
+
+#TEXTO EN LOS GRAFICOS
+ggplot() + geom_text(x = coordenada, y = coordenada, label = "algo", color = "algo")	<- genera texto
+ggplot() + geom_label(x = coordenada, y = coordenada, label = "algo", color = "algo")	<- genera texto pero dentro de una caja
+ggplot() + geom_text_repel(aes(label = variable)) <- genera texto sin que nada se superponga, paquete GGREPEL
+
+#PLOTLY
+library(plotly)
+ggplotly(grafico_creado_en_ggplot) <- transforma un grafico de ggplot en uno interactivo (puede exportarse como pagina web)
+
+#GGANIMATE
+library(gganimate)
+library(gifski)
+animate(grafico + transition_reveal(variale_transicion))	<- genera un grafico animado en base a una variable de transicion (como el año)
+animate(grafico + transition_states(variable_grupo, 		<- genera un grafico animado por grupos, variable_grupo debe ser categorica
+				transition_length = 1,		<- cuantos segundos dura cada transicion
+				state_length = 2) +		<- durante cuantos segundos se mantiene cada transicion
+		  shadow_mark(alpha = 0.5, size = 2)		<- el grupo deja una marca difuminada una vez que desaparezca
+		  enter_fade() +				<- genera una aimacion para el grupo entrante
+		  exit_shrink())				<- termina la interaccion del grupo saliente
+
+#HIGHCHARTER
+library(highcharter) <- sirve para crear graficos dinamicos
+library(data.table)
+data <- fread("csv_de_internet") %>% tibble()
+data %>%
+	hchart(type = "line", 					<- tipo de grafico
+	       name = "nombre_leyenda",				<- nombre de la leyenda
+	       showInLegend = TRUE,				<- que genere leyenda
+	       hcaes(x = variable_x, y = variable_y)) %>%
+	hc_add_series(data, showInLegend = TRUE, type = "line", hcaes(x = variable_x, y = "algo"), name = "leyenda)) %>% <- agregar otra serie 
+	hc_xAxis(title = list(text = "algo"), labels = list(format ="{value:%y/%m/%d}") %>%		<- formato y texto del eje x
+	hc_yAxis(title = list(text = "algo"), labels = list(format = "{value}")) %>%			<- formato y texto del eje y
+	hc_title(text = paste0("algo algo"), margin = 30, align = "center") %>%				<- texto, margen y alineacion del titulo
+	hc_subtitle(text = "algo", aling = "left") %>%							<- texto y alineacion del subtitulo
+	hc_legend(enabled = TRUE) %>%									<- leyenda
+	hc_credits(enabled = TRUE, text = "algo", href = "link") %>%					<- creditos y sitio web
+	hc_tooltip(pointFormat = "<span>Algo<span>", shared = TRUE, borderWidth = 0 %>%			<- tool tip al pasar el mouse
+	hc_chart(zoomtype = "x") %>%									<- poder hacer zoom
+	hc_exporting(enabled = TRUE, filename = "nombre")						<- poder exportar con un boton
+
+--------------------
+PRUEBAS DE HIPOTESIS
+--------------------
+test z <- media
+test t <- media con varianza desconocida
+test chi cuadrado <- varianza
+test f <- varianza de dos muestras
+prop test <- proporciones
+
+#TEST T
+t.test(dataframe$variable, conf.level = 0.95)$conf.int
+t.test(dataframe$variable, mu = numero, alternativa = "l" o "g", conf.level = 0.95)	<- mu determina la H0, test de una cola (izq-"l" o der-"g")
+prop.test(dataframe$variable, n = numero, p = proporcion, alternative = tipo_de_cola) <- test para proporciones
+t.test(
+	x = dataframe %>% filter(variable_categorica == "categoria_1") %>% pull(variable_y),
+	y = dataframe %>% filter(variable_categorica == "categoria_2") %>% pull(variable_y),
+	mu = 0,										<- media igual a cero
+	alternative = "t",								<- test de dos colas
+	conf.level = 0.95)								<- nivel de confianza
+
+------------
+MODELO ANOVA
+------------
+se usa para comparar diferencias de medias entre grupos en base a categorias
+aov(formula, daframe) %>% summary() <- se basa en que los residuos siguen una distribución normal y se usa con variables categoricas
+aov(variable_y ~ variable_categorica, data = dataframe) %>% summary()	<- Da lo mismo que el test t, ya que solo hay 2 categorias o niveles
+modelo <- aov(variable_y ~ variable_categorica)	<- variable categorica debe ser factor, de lo contrario usar as.factor()
+summary(modelo)	<- lo mismo que anova(modelo), dice si las medias difieren o no pero no dice cuales, para eso se usa test de scheffe o turkey
+coef(modelo)	<- coeficientes
+resid(modelo)	<- residuos
+dataframe %>%
+	ggplot(aes(x = variable_categorica, y = variable_y, fill = variable_categorica)) +	<- grafico para test anova con 2 niveles
+	geom_boxplot() +									<- boxplot diferencia las categorias
+	stat_summary(fun = mean, geom = "point", size = 8, color = "red", fill = "red")		<- graficamos el promedio
+dataframe %>%								<- grafico de linea para test anova con mas de 2 niveles
+	group_by(variable_categorica1, variable_categorica2) %>%
+	summarise(cantidad = n(),
+		mean_y = mean(variable_y)) %>%
+	ggplot(aes(x = variable_categorica1,				<- donde se intersectan dos rectas existe interacion
+		y = mean_y,
+		color = variable_categorica2)) +
+	geom_line(aes(group = variable_categorica2)) +
+	geom_point()
+aov(variable_y ~ variable_categorica1*variable_categorica2, data = dataframe) %>% summary()	<- modelo anova testeando interacciones
+aov(variable_y ~ variable_categorica1 + variable_categorica2 + variable_categorica1:variable_categorica2, data = dataframe) <- equivalente al * 
+
+#NORMALIDAD EN LOS RESIDUOS (SUPUESTO 1)
+modelo <- aov(variable_y ~ variable_categorica1 + variable_categorica2, data = daframe) %>% summary() <- modelo anova asume errores normales
+para solucionar normalidad, se puede: incluir/excluir variables, incluir/excluir observaciones o utilizar otra metodologia
+Normalidad: los errores siguen una distribucion normal, los residuos estandarizados deben estar pegados a la recta (qqplot)
+	usa residuos estandarizados
+	- Grafico cuantil-cuantil:
+		ggplot(dataframe,
+			aes(sample = rstandard(modelo))) +
+			stat_qq() +
+			stat_qq_line()
+	- Test de Shapiro-Wilk para conjuntos de datos pequeños (H0: los datos siguen una distribucion normal)
+		shapiro.test(residuos_std)	<- se busca un valor p alto para no rechazar H0
+		shapiro.test(mi_modelo$residuals)
+	- Test de Kolmogorov-Smirnov (H0: los datos siguen una distribucion normal)
+		ks.test(residuos_std, "pnorm", mean = mean(residuos_std), sd = sd(residuos_std)) <- se busca un valor p alto para no rechazar H0
+	- Test de Lilliefors (H0: los datos siguen una distribucion normal)
+		lillie.text(residuos_std <- libreria NORTEST
+	- Test de Anderson-Darling (H0: los datos siguen una distribucion normal)
+		ad.test(residuos_std) <- libreria NORTEST, le otorga mas peso a las colas
+	- Test de Cramer-von Mises (H0: los datos siguen una distribucion normal)
+		cvm.test(residuos_std) <- libreria NORTEST
+calcular residuos estandarizados: modelo_residuos = rstandard(modelo)	
+
+#HOMOCEDASTICIDAD (SUPUESTO 2)
+Homocedasticidad: la varianza (del error) de todos los posibles valores de la variable debe ser constante, se ve a traves de una nube de puntos
+	autoplot(modelo)[1:2] + theme_minimal()	<- libreria GGFORTIFY, entrega 4 graficos pero usamos 2 para homocedasticidad y evaluar residuos normales
+	grafico: variable predictora y o valores ajustados de y (eje x) vs residuos estandarizados (eje y)
+	no se deben identificar patrones en la nube de puntos o cambios sistematicos en las amplitudes verticales de los residuos estandarizados
+	- Test de Breusche-Pagan (H0: los errores son homocedasticos)
+		bptest(modelo) <- libreria LMTEST
+	usa residuos estandarizados
+
+#LINEALIDAD DE LA MEDIA (SUPUESTO 3)
+indica posibles transformaciones en las variables
+variables predictora y (eje x) vs residuos (eje y), es casi lo mismo que homocedasticidad en cuanto grafico
+tambien se ve a traves de una nube de puntos (no deben haber patrones)
+aca se usan los residuos, pero tambien podrian ser los residuos estandarizados
+
+#INDEPENDENCIA (SUPUESTO 4)
+	- Test de Durbin-Watson (H0: los errores no están autocorrelacionados)
+		dwtest(modelo) <- se aplica a todo el modelo, buscamos no rechazar, libreria LMTEST
+
+#TEST DE SCHEFFE
+test_scheffe = scheffe.test(mi_modelo, "Tratamiento", alpha = 0.05, group = FALSE)	<- para saber donde hay diferencia estadistica entre grupos
+
+#TEST DE TURKEY
+TurkeyHSD(mimodelo)	<- tambien sirve para saber donde existe diferencia significativa entre los grupos de la variable categorica
+plot(TurkeyHSD(modelo))	<- muestra intervalos de confianza, si contiene el cero entonces no hay diferencia entre medias en ese grupo
+
+#ANALISIS DE FACTOR DE INFLACION DE LA VARIANZA (VIF)
+se utiliza cuando el modelo tiene variables muy parecidas, si el valor es mayor a 5 o 10  las variables tienen mucha relacion y se deberian quitar
+vif(modelo) <- libreria CAR
+df_vif <- tibble(variable = VIF %>% names(), VIF = VIF) <- reemplaza un analisis de correlacion
+
+----------------
+REGRESION LINEAL
+----------------
+modelo <- lm(variable_y ~ variable_x, data = dataframe)
+			si agrego -1 la regresion no tiene intercepto
+			si coloco . se agregan todas las variables
+			si p < alfa = 0.05 se rechaza H0, de modo que dicha variable es significativa para explicar la variable y
+dataframe %>%
+	sample_n(1000) %>%
+	ggplot(aes(x = variable_x, y = variable_y, color = variable_categorica)) +	<- ajustar utilizando variables categoricas
+	geom_point() +
+	geom_smooth(method = "lm", 
+		    se = TRUE,
+		    formula = "y ~ x")
+
+#CRITERIO DE INFORMACION DE AKAIKE (AIC Y R2)
+modelo_full <- lm(variable_y ~ ., data = daframe)	<- el . incluye todas las variables del dataframe
+step(modelo_full, direction = "both")	<- "forward" parte de una variable y va incluyendo predictores en cuanto sean significativos
+					   "backward" parte con todas las variables y las va eliminando
+					   "both" hace ambas
+step sirve cuando tenemos muchas variables y queremos dejar las mas relevantes, se busca el AIC más negativo
+metodo forward:
+	modelo_vacio <- lm(y ~ 1, data = data)
+	scope <- data %>% formula(y ~ .)
+	modelo_forward <- stepAIC(modelo_vacio, trace = FALSE, direction = 'forward', scope = scope) <- libreria MASS (dplyr::select)
+	summary(modelo_forward)
+
+-------------------
+REGRESION LOGISTICA
+-------------------
+library(data.table)
+library(InformationValue)	<- sirve para ver estadisticos en los test (como el R2 en regresion anova y lineal)
+regresion logistica se usa para variables de respuesta tipo 1 y 0 (o clases) en problemas de clasificacion
+
+modelo <- glm(formula = variable_y ~ variable_x, data = dataframe, family = binomial(link = "logit"))
+summary(modelo)	<- para obtener la probabilidad, hay que aplicar exp(parametro)
+dataframe %>%
+	sample_n(1000) %>%
+	ggplot(aes(x = variable_x, y = variable_y, color = variable_categorica)) +	<- ajustar utilizando variables categoricas
+	geom_point() +
+	geom_smooth(method = "glm", 
+		    method.args = list(family = "binomial"),
+		    se = TRUE, 
+		    formula = "y ~ x")	
+
+#CREACION DEL MODELO: BASES DE ENTRENAMIENTO Y VALIDACION
+set.seed(123)
+id <- sample(1:nrow(dataframe), size = nrow(dataframe)*0.7, replace = FALSE)	<- base de entrenamiento requiere entre 70-80% de los datos
+train <- dataframe %>% slice(id)	<- base de entrenamiento, mientras mas complejo el modelo requiere mas fraccion
+test <- dataframe %>% slice(-id)	<- base de validacion, no debe contener observaciones de la base de entrenamiento
+modelo <- glm(formula = variable_y ~ ., data = train, family = binomial(link = "logit")) %>% summary()	<- modelo con base de entrenamiento
+y_test_prob <- predict(modelo, newdata = test, type = "response")	<- entrega la probabilidad de que y tome valor 1
+y_test_pred <- if_else(y_test_prob > c, 1, 0)				<- entrega valores predichos de acuerdo al punto de corte c (ejemplo 0.5)
+
+otra forma:
+(n_filas = dim(dataframe)[1]) <- para contar el numero de registros
+set.seed(123)
+ind_train = sample(1:n_filas, size = n_filas*0.7) <- base de entrenamiento contiene 70% de los datos
+base_train = dataframe[ind_train, ]
+base_test = dataframe[-ind_train, ]
+modelo <- glm(variable_y ~ variable_x, data = base_train, family = binomial(link = "logit"))
+summary(modelo)$coefficients
+probs <- predict.glm(modelo, base_test, type = "response")
+y_reales <- base_test$variable_y
+y_predichos <- ifelse(probs >= punto_de_corte, 1, 0)
+
+#MATRIZ DE CONFUSION
+la matriz de confusion depende del punto de corte definido en los valores predichos anteriores
+MLmetrics::ConfusionMatrix(y_predichos, base_test$variable_y) <- entrega valores reales y predichos para ver si se parecen (verdadero/falso negativo/positivo)
+InformationValue::confusionMatrix(actuals = y_reales, predictedScores = probs, threshold) <- otra forma mejor de obtener matriz de confusion para punto de corte
+valores reales en las filas y valores predichos en las columnas
+
+indicadores:
+	1. sensibilidad (sensitivity) = VP/(VP + FN)			<- que tan bien el modelo califica los casos positivos
+	2. especificidad (specificity) = VN/(VN + FN)			<- que tan bien el modelo califica los casos negativos
+	3. exactitud (acurracy) = (VP + VN)/(VP + VN + FP + FN)		<- proporcion de casos clasificados correctamente, independiente de la clase
+	4. precision = VP/(VP + FP)					<- porcentaje de casos positivos clasificados correctamente	
+
+InformationValue::sensitivity(y_reales, probs, threshold)	<- sensibilidad
+MLmetrics::Sensitivity(y_reales, y_predichos, positive = '1')	<- sensibilidad
+InformationValue::specificity(y_reales, probs, threshold)	<- especificidad
+MLmetrics::Specificity(y_reales, y_predichos, positive = '1')	<- especificidad
+MLmetrics::Accuracy(y_reales, y_predichos)			<- precision
+
+#PUNTUACION F1 - MEDIDA DE BONDAD DE AJUSTE
+medida que combina sensibilidad y precision, sirve para bases desbalanceadas
+MLmetrics::F1_Score(y_true = y_reales, y_pred = y_predichos, positive = "1") <- si F1 = 0.15 en promedio la precision y sensibilidad es baja
+
+#TEST DE HOSMER Y LERNESHOW - MEDIDA DE BONDAD DE AJUSTE (H0: no existe diferencia entre valores observados y valores predichos) 
+sirve para ver si la tasa de los eventos observados es igual a los eventos esperados
+DescTools::HosmerLemeshowTest(fit = probs, obs = y_reales)
+
+#CURVA ROC - MEDIDA DE BONDAD DE AJUSTE
+InformationValue::plotROC(actuals = y_reales, predictedScores = probs) <- la curva roc sirve para graficar y poder elegir el punto de corte
+en el eje y (sensibilidad) elegimos el porcentaje de usuarios al que le aplicaremos la campaña, y eso indica el eje x (1 - especificidad) que
+tambien se les aplicara la campaña a pesar que no estaban seleccionados
+representa la tasa de VP (sensibilidad) frente a la tasa de FP (1 - especificidad), de aqui se extrae el area bajo la curva AUC
+si el area roc (AUC) es 0.5 el modelo no sirve porque no dice nada
+si el area roc (AUC) está entre 0.85 y 0.93 el modelo es buenisimo
+si el area roc (AUC) es mayor a 0.95 el modelo es perfecto (pero probablemente este malo, la variable x e y se parecen mucho)
+
+#TEST KOLMOGOROV-SMIRNOV - MEDIDA DE BONDAD DE AJUSTE
+ks = ksplot(rocit(score = probs, class = y_reales)) <- grafico KS, libreria ROCit
+ks$`KS stat` <- indice KS
+indicador de discriminacion de ajuste del modelo, compara funciones de distribucion de ambas clases midiendo la misma distancia entre curvas
+malo: KS < 20%
+regular: 20% < KS < 40%
+bueno: 40% < KS < 60%
+muy bueno: 60% < KS < 75%
+sospechoso: KS > 75%
+
+#INDICE DE GINI - MEDIDA DE BONDAD DE AJUSTE
+Gini = 2*AUC - 1 <- valores cercanos a 0 indican que el modelo no logra distinguir entre clases, caso perfecto es cercano a 1
+MLmetrics::Gini(y_true = y_reales, y_pred = probs)
+					    
+#DESBALANCE EN LOS DATOS
+los modelos de regresion logistica asumen misma cantidad de observaciones de 0s y 1s, si esto no ocurre el modelo predice mal una clase y bien otra
+soluciones:
+	1. eliminar obs de la clase con mayor representativdad
+	2. incluir varias veces a las obs de la clase con menor representatividad
+	3. utilizar 1 y 2 al mismo tiempo
+	4. utilizar regularizacion L1 y L2
+	5. utilizar otro modelo que se vea afectado por desbalances
+para mejorar el modelo se pueden agregar variables predictoras relevantes: seleccion backward y forward (combiene partir con todos e ir descartando)
+
+----------------
+SERIES DE TIEMPO
+----------------
+library(forecast)
+serie = ts(data, start, end, frequency)	<- solo es necesario definir una, star o end
+pasajeros = ts(dataframe$total_pasajeros, start = c(2006, 1), frequency = 12)	<- 1 = anual, 12 = mensual, 52 = semanal
+plot(pasajeros)		<- grafico usando plot()
+dataframe %>%						<- grafico usando ggplot2, se usa con geom_point() y geom_line()
+	mutate(periodo = as.character(periodo) %>%
+		lubridate::ym())
+decompose()		<- descompone la serie de tiempo en elementos aditivos: estacionalidad, tendencia y error
+tendencia 		<- tendencia general, intervalos en los que la serie crece o decrece
+estacionalidad 		<- comportamientos periódicos de los datos (generalmente asociado a estaciones)
+componentes aleatorios	<- error o ruido 
+serie estacionaria	<- media y varianza son constantes en el tiempo, no tiene tendencia ni estacionalidad, es estable a lo largo del tiempo
+
+#RUIDO IID
+serie de tiempo sin estacionalidad ni tendencia (solo tiene el componente aleatorio), con media cero y varianza constante
+toda serie iid es ruido blanco, pero no al reves
+
+#RUIDO BLANCO (WHITE NOISE)
+serie de tiempo no correlacionada entre si, con media cero, varianza constante y covarianza cero (es estacionaria)
+
+#FUNCION DE AUTOCORRELACION (ACF)
+correlacion de una serie de tiempo consigo misma, pero a ciertos rezagos de tiempo
+acf(dataframe)		<- se requiere que los valores estén dentro de la banda de confianza para que no haya autocorrelacion
+
+#FUNCION DE AUTOCORRELACION PARCIAL (PACF)
+correlacion de una serie de tiempo con su propio rezago, pero considerando los valores entre los datos rezagados <- algoritmo de Durbin-Levinson
+pacf(dataframe)
+
+#METODO DE HOLT-WINTERS
+metodo que utiliza suavizamiento exponencial basado en la media (alpha), tendencia (beta) y estacionalidad (gamma)
+hw_fit = HoltWinters(serie)
+hw_pred = predict(hw_fit, n.ahead = 12, prediction.interval = T)	<- prediccion a 12 meses
+mean(abs(serie - hw_pred[,1])/abs(serie))	<- indicador MAPE, indica cuanto % de error de preddicion tiene el metodo respecto al dato real
+
+#ARREGLAR ESTACIONARIEDAD
+	1. ANALISIS DE HOMOCEDASTICIDAD
+		la varianza no es constante en el tiempo -> transformación de BoxCox, libreria FORECAST
+		BoxCox.lambda()	<- entre un valor de lambda tal que si es 0 se aplica log() y si es 1 no es necesario aplicar transformacion
+		BoxCox(serie, lambda = valor_lambda)	<- para aplicar la transformacion	
+		plot()
+
+	2. METODO DE DIFERENCIACION
+		eliminar tendencia	<- diff(serie), diferenciacion a un paso
+		eliminar estacionalidad	<- diff(serie, lag = s), diferenciacion a s pasos (12 para 12 meses), tambien se puede usar diff(log(serie))
+
+	3. METODOLOGIA DE BOX-JENKINS
+		a. verificar que la serie sea estacionaria
+		b. identificar un modelo tentativo
+		c. ajustar y estimar el modelo de series de tiempo
+		d. verificar diagnostico, ver si el ajuste a los datos es el deseado
+		e. usar el modelo para realizar predicciones
+
+#MODELOS DE SERIES DE TIEMPO
+Arima(serie, order = c(p,d,q), seasonal = c(P,D,Q), period = s) <- libreria FORECAST, order es parte regular y seasonal es la estacional
+auto.arima()	<- identifica el mejor modelo entre SARIMA, ARIMA, ARMA, AR y MA, libreria FORECAST
+	1. Modelo AR(p): autoregresivo de orden p, el valor de la observacion en un tiempo t esta determinado por t-1
+			 el error es ruido blanco
+			 el parametro que acompaña a y_t-1 debe ser menor a 1 en valor absoluto para que la serie sea estacionaria
+			 procesos de memoria larga
+
+	2. Modelo MA(q): media movil de orden q, el valor de la observacion en un tiempo t depende de su error y el error de t-1
+			 el error es ruido blanco
+			 procesos de memoria corta
+
+	3. Modelo ARMA(p,q): autoregresivo de media movil, el valor de la observacion en t depende de su valor en t-1, su error en t y error en t-1
+			 el error es ruido blanco
+			 el parametro que acompaña a y_t-1 debe ser menor a 1 en valor absoluto para que la serie sea estacionaria
+	
+	4. Modelo ARIMA(p,d,q): no es estacionario ya que tiene tendencia, pero se convierte en ARMA al realizar d diferenciaciones (y_t - y_t-1)
+
+	5. Modelo SARIMA(p,d,q)(P,D,Q)[s]: elimina la parte estacional de una serie no estacionaria
+			 se compone de una parte regular (p,d,q) y una parte estacional (P,D,Q) donde s es el periodo estacional de la serie
+
+#SELECCION DE MODELOS
+una forma de seleccionar modelos es aquel con menor AIC
+AR(p)		ACF decae a 0 y PACF corta en 0 al rezago p (estan dentro del intervalo de confianza)
+MA(q)		ACF corta en 0 al rezago q (estan dentro del intervalo de confianza) y PACF decae a 0
+ARMA(p,q)	ACF decae a 0 y PACF decae a 0
+
+#ANALISIS DE ESTACIONARIEDAD
+Test aumentado de Dickey-Fuller: testea si el parametro de y_t-1 es igual a cero
+H0: la serie de tiempo no es estacionaria (raiz unitaria)
+adf.test()	<- libreria TSERIES
+
+#ANALISIS DE INDEPENDENCIA DE RESIDUOS
+Test de Ljung-Box: testea que los residuos sean independientes
+H0: no existe autocorrelacion entre los residuos, los datos se distribuyen de forma independiente
+checkresiduals() <- libreria FORECAST
+
+#PREDICCIONES
+predicciones <- forecast(modelo, level = c(95), h = 12)	<- donde level es el nivel de confianza y h el numero de periodos a predecir
+autoplot(predicciones)

@@ -1,0 +1,138 @@
+----------
+R MARKDOWN
+----------
+R Markdown -> (knit) -> archivo.md -> (Pandoc) -> (LaTeX) -> pdf, ppt, html, doc, etc
+boton "knit" para compilar
+escribir funciones llamando a R: `r funcion`
+escribir funciones sin que se ejecuten: `funcion`
+*letra cursiva* y _letra cursiva_
+**letra en negrita** y __letra en negrita__
+~~letra tachada~~
+superindice^2^
+subindice~2~
+
+# Encabezado 1
+## Encabezado 2
+### Encabezado 3..
+
+> generar la primera cita
+
+>> generar una subcita de la primera
+
+> generar la segunda cita...
+
+Listas:
+- uno
+- dos
+a) uno
+b) dos
+1. uno
+2. dos
+
+#ENCABEZADO YAML
+al apretar la tecla F12 en una pagina web -> elementos -> fuentes, se abre un codigo de formato para modificar partes del documento
+---
+title: "Primer informe en Markdown"
+author:
+ - "Autor 1"
+ - "Autor 2"
+date: "04-07-2022" <- se puede usar `r format(Sys.Date(), "%d de %B, %Y")` para actualizar la fecha diariamente
+output: 
+	html_document:			<- tambien se puede usar prettydoc::html_pretty: para cargar otros temas
+		theme: nombre_tema	<- existen diversos 
+---
+
+#MODIFICAR CSS (CASCADING STYLE SHEETS)
+define el estilo de un documento
+<style>
+h1 {				<- h1 es para editar titulo, h2 para subtitulo, h3..
+	font-size: 20px;
+}
+
+p {				<- p es para editar cuerpo del texto
+	font-size: 10px;
+}
+</style>
+
+```{css, echo = FALSE}			<- este chunk crea un objeto para que las palabras no excedan el maximo de ancho de la pagina
+.myBox {					<- se usa debajo del chunk anterior, en ese orden
+	border: none;
+	padding: 5px;
+	font: 18px/24px sans-serif;
+	width: max;
+	overflow-x: auto;
+	<--- overflow: scroll; --->
+}
+```
+
+<div class = "MyBox">			<- se usa <div> y </div> al comienzo y final de la frase para utilizar el chunk anterior
+$$palabra_que_se_escapa_del_ancho_de_la_pagina$$
+</div>
+
+#SETUP Y LIBRERIAS
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)	<- si cambio echo = FALSE no se veran codigos en el informe
+library(DT)	<- instalar libreria para tablas
+library(tidyverse)
+library(datos)	
+```
+
+#CHUNK (BLOQUE DE CODIGO)
+```{r  nombre}
+texto
+```
+argumentos del chunk:
+	eval = FALSE 		<- impide que se evalue el codigo, depura errores
+	include = FALSE 		<- ejecuta el codigo pero no muestra los resultados en el documento
+	echo = FALSE 		<- no muestra el codigo, pero si los resultados en el documento
+	message/warning = FALSE	<- impide que aparezcan mensajes o advertencias	
+	results = "hide"		<- oculta la salida de algunas funciones
+	fig.show = "hide" 	<- esconde los graficos
+	error = TRUE		<- ayuda avisando donde hay un error, pero compila hasta el final
+	fig.cap = "hide"		<- esconde los pie de pagina
+
+#TABLAS
+Derecha | Centro  | Izquierda	<- dibujarla
+-------:|:-------:|:---------
+Celda 1 | Celda 2 | Celda 3
+Celda 4 | Celda 5 | Celda 6
+
+```{r}
+dataframe %>%
+	DT::datatable(
+		extensions = c("algo"),			<- DT tiene diversas extensiones en su sitio web
+		rownames = FALSE,			<- nombres a las filas (si es que tuviesen)
+		options = list(				<- modificaciones visuales
+			dom = "Blftipr",		<- cada letra modifica un elemento visual de la tabla
+			buttons = list(			<- modifica los botones
+			list(extend = "excel",		<- para editar el boton de descarga en excel
+			text = "Descargar Excel",	<- cambiarle el texto del boton
+			filename = paste0("Base.xlsx"),	<- cambiar el nombre del archivo
+			exportOptions = list(		
+			modifier = list(page = "all")
+			)
+		)
+	),
+	columnDefs = list(list(className = "dt-center", targets = "all")) <- para centrar columnas,
+	initComplete = JS(				<- edita los colores y texto de la tabla
+	"function(settings, json) {",
+	"$(this.api().table().header()).css({"font-size": "15px", "background-color": "#04346c", "color": "#fff"});
+		$(this.api().table().container()).css({"font-size": "13px"})".
+	"}")
+	),
+	fillContainer = TRUE,
+	class = "display") %>%
+	formatRound(columns = c("nombre_columna_nueva"), digits = 0) %>% <- crea una columna nueva en la tabla
+	formatPercentage(columns = c("nombre_columna_nueva"))		 <- cambiar a porcentage
+```
+
+#ENLACES
+[Nombre del enlace](sitio_web)	<- genera un enlance (el sitio web no debe estar entre comillas)
+
+#IMAGENES
+![](arhivo_imagen.jpg)		<- la imagen debe estar guardada en el directorio, tambien funciona con una imagen de un sitio web
+
+#FORMULAS
+R Markdown utiliza MiKTeX de LaTeX para sus formulas
+$formula$	<- escribe la formula sin centrarla
+$$formula$$	<- escribe la formula centrada, se necesita MiKTeX

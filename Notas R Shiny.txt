@@ -1,0 +1,217 @@
+-------
+R SHINY
+-------
+library(shiny)
+
+#PREAMBULO
+options(repos = c(CRAN = "http://cran.rstudio.com"))	
+options(scipen = 999)					
+memory.size(max = T)					
+rm(list = ls(), envir = environment())			
+cat("\014")						
+options(digits = 2)					
+if(!require(libreria)) install.packages("libreria")	<- si tiene el paquete lo ejecuta y si no lo instala
+pacman::p_load(libreria1, libreria2, libreria3, ...)
+dir <- "ruta"
+setwd(dir)
+
+source("ruta/funciones.R")	<- sirve para llamar funciones desde otro script (se debe crear el script "funciones")
+
+
+
+ui <- fluidPage(	<- user interface siempre se inicia con fluidPage, es lo que el usuario puede ver
+    titlePanel("titulo"),
+	sidebarLayout(
+        sidebarPanel(
+            sliderInput("obs", "titulo", min = 50, max = 100, value = 70),
+		    selectInput("col", "Color", c("red", "blue", "black")),
+	checkboxInput("punto", "Puntos:", value = FALSE)
+	),
+	mainPanel(plotOutput("outplot"))	<- tambien se puede usar un textOutput con renderText
+	)
+)
+
+server <- function(input, output) {	<- en esta seccion se usa input$nombre para mostrar los inputs del ui
+	output$outplot <- renderPlot({
+	set.seed(123)
+	x <- rnorm(input$nrand)
+	t <- ifelse(input$punto, "b", "l")
+	plot(x, type = t, col = input$col)
+	})
+}
+
+shinyApp(ui = ui, server = server)
+
+#CREAR DISTINTAS SECCIONES (TABS)
+ui <- fluidPage(tabsetPanel(			<- en lugar de fluidpPage tambien puede ir un mainPanel			
+	tabPanel("Plot", plotOutput("plot")),
+	tabPanel("Summary", "texto", verbatimTextOuput("summary")),
+	tabPanel("Table"", tableOutput("tabla")))
+
+ui <- fluidPage(navlistPanel(			<- otra forma de generar tabs (secciones)
+	tabPanel("titulo1", "contenidos"),
+	tabPanel("titulo2", "contenidos"),
+	tabPanel("titulo3", "contenigos")))
+
+ui <- navbarPage(title = "Page",		<- otra forma de generar tabs (secciones)
+	tabPanel("titulo1", "contenidos"),
+	tabPanel("titulo2", "contenidos"),
+	tabPanel("titulo3", "contenigos"))
+
+server <- function(input, output) {
+	output$plot <- renderPlot({ hist(rnorm(input$obs)) })
+	output$summary <- renderText({ input$obs })
+	output$tabla <- renderTable({ data.frame(input$obs) })
+}
+
+#LAYOUTS
+sidebarLayout
+ui <- fluidPage(
+	sidebarLayout(			
+		sidebarPanel(),
+		mainPanel()
+	)
+)
+
+splitLayout
+ui <- fluidPage(
+	splitLayout(#object1, #object2
+	)
+)
+
+verticalLayout()
+ui <- fluidPage(
+	verticalLayout(#object1, #object2, #object3
+	)
+)
+
+fluidRow
+ui <- fluidPage(
+	fluidRow(column(width = 4), column(width = 2, offset = 3)),
+	fluidRow(column(width = 12))
+)
+
+flowLayout
+ui <- fluidPage(
+	flowLayout(#object1, #object2, #object3
+	)
+)
+
+#HTMLWIDGETS
+	1. PLOTLY
+		library(plotly)
+		grafico <- ggplot()
+		ggplotly(grafico)
+
+	2. HIGHCHARTER
+		library(highcharter)
+		library(forecast)
+		modelo <- forecast(auto.arima(data.frame))
+		hchart(modelo) %>%
+		hc_navigator(enabled = TRUE) %>%	<- opciones de visualizacion
+		hc_rangeSelector(enabled = TRUE) %>%	<- opciones de visualizacion
+		hc_title(text = "titulo")
+
+	3. RVEST		<- web scraping
+		url <- "http://..."
+		datos <- read_html(url) %>%
+			html_table() %>%
+			dplyr::nth(2) %>%	<- extrae el elemento n-esimo, sirve para seleccionar la tabla correcta dentro de la pagina
+			janitor::clean_names()
+
+	4. DATATABLE
+		library(DT)
+		datatable(datos)	<- convierte en tabla los datos (puede ser usado luego de rvest para crear datos a partir de una pagina)
+
+	5. LEAFLET		<- mapas
+		library(leaflet)
+		leaflet(datos) %>%
+			addTiles() %>%	<- agrega el mapa
+			addMarkers(
+				lng = ~variable_longitud,
+				lat = ~variable_latitud,
+				popup = ~as.character(variable_magnitud),
+				label = ~as.character(`variable_fecha`)
+				) %>%
+			addProviderTiles("Esri.WorldImagery")	<- cambiar visualizacion del mapa
+
+#TEMAS 
+library(bslib)
+	1. TEMAS DE BOOTSWATCH
+		ui <- fluidPage(
+			theme = bs_theme(bootswatch = "solar"),	temas: "darkyl, flatly, cosmos, cerulean, etc (el server no cambia)
+			titlePanel("titulo"),
+			sidebarLayout(...
+
+	2. TEMA PROPIO
+		library(thematic)
+
+		thematic_shiny(font = "Press Start 2P")	<- tema que permite cambiar graficos y otros botones
+
+		ui <- fluidPage(
+			theme = bs_theme(		<- elegir tema propio
+				bg = "HFFFDD0",	<- background, color de fondo
+				fg = "#202A44".	<- foreground, color de letra
+				heading_font = font_google("Mouse Memoirs"),
+				base_font = font_google("Uchen"),
+				primary = "black" 
+				),
+			titlePanel("titulo"),
+			sidebarLayout(...
+			titlePanel("titulo"),
+			sidebarLayout(...
+
+#SHINY DASHBOARDS
+library(shinydashboard)
+ui <- dashboardPage(			<- crear dashboards, tambien se permiten elementos como valueBox, box, infoBox
+		dashboardHeader(),
+		dashboardSidebar(
+			sliderInput("valor", label = "Valor, min = 1, max = 10, value = 1)
+		),
+		dashboardBody(
+			fluidRow(box(width = 12, plotOutput("grafico")))
+		)
+	)
+
+server <- function(input, output){
+
+}
+
+shinyApp(ui, server)
+
+otros paquetes para cambiar estilos: shinydashboardPlus, bs4Dash, miniUI2Demo, tablerDash, shinyMobile
+
+#COMPARTIR UNA APLICACION
+	1. VIA IP LOCAL
+		- solo funciona para redes locales
+		- requiere que el pc este encendido para que la app corra
+		reemplazar server <- function(input, output) por
+ip <- gsub(".*? ([[:digit:]])", "\\1", system("ipconfig", intern = T)[grep("IPv4", system("ipconfig", intern = T))])	<- en windows, puede cambiarse por el IP
+		shinyApp(ui = ui, server = server, options = list(host = ip, port = 5759)) 	<- se puede elegir cualquier puerto (port)
+
+	2. SHINYAPPS.IO
+		se debe conectar una shiny app desde la shinyapps.io y luego desde RStudio se conecta la cuenta
+		rsconnect::deployApp("ruta_de_la_app")
+
+#DESCARGAR DATOS
+descargar_datos <- function(fecha){
+	message(fecha)
+	Sys.sleep(10)	<- forzar a que el codigo se ejecute en 10 segundos
+	fecha <- ymd(fecha)
+	url <- format(fecha, "https://....html")
+	datos <- read_html(url) %>%
+		html_table() %>%
+		dplyr::nth(2) %>%
+		janitor::clean_names()
+	datos
+}
+
+#EXPRESIONES REACTIVAS
+es codigo que usa un input y retorna un valor, entonces la expresion se actualizara cuando el valor de los inputs de los que depende cambie
+se define en el server
+
+nombre_expresion <- reactive({
+
+	message(input$nombre_input)
+
+})

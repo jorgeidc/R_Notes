@@ -1,0 +1,283 @@
+------------
+RVEST
+------------
+informacion de web scraping en archivos robots.txt de paginas grandes
+dentro de robots.txt se encuentran los sitemap con mas informacion de la pagina web
+
+#METODOS DE PREVENCION
+	1. Crawler anti-scraping: estudia la frecuencia conque una misma IP realiza consultas en un sitio web
+	2. reCaptcha: sistema de deteccion de robot diseñado por google
+	3. User-Agent: encabezado del sitio web para identificar como visita al usuario (su sistema operativo, version, CPU, etc)
+
+#HTML (HYPER TEXT MARKUP LANGUAGE)
+lenguaje estandar para la creacion de paginas web
+html es la parte interna de la pagina web y css es la parte externa
+se compone de <head> y <body>
+
+#ETIQUETAS
+revisar cheat sheet
+<etiqueta>contenido<etiqueta>
+<p class="saludo">Hola mundo!</p> 
+<p class="saludo">	<- etiqueta de apertura
+class ="saludo"		<- atributo y su valor
+Hola mundo!		<- contenido de texto encerrado
+</p>			<- etiqueta de cierra
+
+<div>		<- division de informacion dentro del contenido
+<a href="...">	<- enlaces
+<strong>	<- texto en negrita
+<br>		<- saltos de linea
+<h1>... <h6>	<- titulos y subtitulos
+<ol>		<- listas ordenadas
+<ul>		<- listas desordenadas
+<li>		<- elementos dentro de una lista
+<span>		<- estilos de una parte de texto
+
+#RVEST
+realiza web scraping a paginas webs de forma estatica
+read_html()	<- extrae la informacion html de la pagina web
+html_node()/html_element()	<- extrae la informacion html del primer mach realizado en base a una consulta
+html_nodes()/html_elements()	<- extrae la informacion html de todas las coincidencias con la consulta realizada
+html_att()	<- extrae la informacion del atributo del note consultado
+html_table()	<- extrae tablas de la pagina web
+html_text2()	<- extrae el text del node o pagina web
+
+#EJEMPLO MERCADO LIBRE
+pagina <- read_html('https://www.mercadolibre.cl/ofertas?promotion_type=deal_of_the_day&container_id=MLC779365-1&page=1')
+
+	1. OBTENER EL NUMERO TOTAL DE PAGINAS
+pagina %>%
+	html_element(xpath = '//ul[@class = "andes-pagination"]') %>%	<- el // busca el notod en todo el html, / busca desde body hacia abajo
+	html_children()	%>%						<- selecciono los elementos dentro del nodo
+	html_text2() %>%						<- text2 entrega el label, mientras que text entrega el codigo bruto
+	as.numeric() %>%						<- convierte elementos a numero
+	max(na.rm = TRUE) %>%						<- selecciona el maximo de paginas
+	supressWarnings()						<- eliminar warning
+
+	2. OBTENER EL TITULO DE LOS PRODUCTOS
+		a. FORMA DIFICIL
+1:48 %>% 	<- hay 48 produtos
+  	map_chr(.f = function(x){
+    		pagina %>% 
+      		html_element(xpath = paste0('//ol[@class = "items_container"]/li[',x,']//p[@class = "promotion-item__title"]')) %>% 
+      		html_text2()
+  })
+
+		b. FORMA FACIL
+Nombre <- pagina %>% 
+  	html_elements(xpath = '//p[@class = "promotion-item__title"]') %>% 
+  	html_text2()
+
+	3. OBTENER PRECIO ANTIGUO
+Precio_antiguo <- pagina %>% 
+  	html_elements(xpath = '//span[@class = "promotion-item__oldprice"]') %>% 
+  	html_text2() %>% 
+  	str_remove_all('\\$ ') %>% 
+  	str_trim() %>% 
+  	str_remove_all('\\.') %>% 
+  	as.numeric()
+
+	4. OBTENER PRECIO OFERTA
+Precio_oferta <- pagina %>% 
+  	html_elements(xpath = '//span[@class = "promotion-item__price"]') %>% 
+  	html_text2() %>% 
+  	str_remove_all('\\$') %>% 
+  	str_trim() %>% 
+  	str_remove_all('\\.') %>% 
+  	as.numeric()
+
+	5. ENVIO GRATIS
+1:length(Nombre) %>% 		<- se debe hacer de esta forma porque no todos los productos tienen envio gratis
+	map_chr(.f = function(x){
+    		pagina %>% 
+      			html_element(xpath = paste0('//ol[@class = "items_container"]/li[',x,']//span[@class = "promotion-item__shipping"]')) %>% 
+      			html_text2() %>% 
+      			if_else(is.na(.),'Sin envio gratis',.)
+  })
+
+	6. VENDEDOR
+vendedor <- 1:length(Nombre) %>% 
+  map_chr(.f = function(x){
+    pagina %>% 
+      html_element(xpath = paste0('//ol[@class = "items_container"]/li[',x,']//span[@class = "promotion-item__seller"]')) %>% 
+      html_text2() %>% 
+      if_else(is.na(.),'Sin información',.)
+  })
+
+	7. URL DEL PRODUCTO
+URL <- pagina %>% 
+  html_elements(xpath = '//a[@class = "promotion-item__link-container"]') %>% 
+  html_attr('href')
+
+#WEB SCRAPING
+scraping <- function(){
+  
+pagina <- read_html('https://www.mercadolibre.cl/ofertas?promotion_type=deal_of_the_day&container_id=MLC779365-1&page=1')
+  
+  N_paginas <- pagina %>% 
+    html_element(xpath = '//ul[@class = "andes-pagination"]') %>% 
+    html_children() %>% 
+    html_text2() %>% 
+    as.numeric() %>% 
+    max(na.rm = TRUE) %>% 
+    suppressWarnings()
+  
+  1:N_paginas %>% 
+    map_dfr(.f = function(y){
+      
+      pagina <- read_html(paste0('https://www.mercadolibre.cl/ofertas?promotion_type=deal_of_the_day&container_id=MLC779365-1&page=',y))
+    
+      # Nombre
+      Nombre <- pagina %>% 
+        html_elements(xpath = '//p[@class = "promotion-item__title"]') %>% 
+        html_text2()
+      
+      # Precio antiguo
+      Precio_antiguo <- pagina %>% 
+        html_elements(xpath = '//span[@class = "promotion-item__oldprice"]') %>% 
+        html_text2() %>% 
+        str_remove_all('\\$') %>% 
+        str_trim() %>% 
+        str_remove_all('\\.') %>% 
+        as.numeric()
+      
+      # Precio oferta
+      Precio_oferta <- pagina %>% 
+        html_elements(xpath = '//span[@class = "promotion-item__price"]') %>% 
+        html_text2() %>% 
+        str_remove_all('\\$') %>% 
+        str_trim() %>% 
+        str_remove_all('\\.') %>% 
+        as.numeric()
+      
+      # Envio gratis
+      Envio <- 1:length(Nombre) %>% 
+        map_chr(.f = function(x){
+          pagina %>% 
+            html_element(xpath = paste0('//ol[@class = "items_container"]/li[',x,']//span[@class = "promotion-item__shipping"]')) %>% 
+            html_text2() %>% 
+            if_else(is.na(.),'Sin envio gratis',.)
+        })
+      
+      # Vendedor
+      vendedor <- 1:length(Nombre) %>% 
+        map_chr(.f = function(x){
+          pagina %>% 
+            html_element(xpath = paste0('//ol[@class = "items_container"]/li[',x,']//span[@class = "promotion-item__seller"]')) %>% 
+            html_text2() %>% 
+            if_else(is.na(.),'Sin información',.)
+        })
+      
+      # URL del producto 
+      URL <- pagina %>% 
+        html_elements(xpath = '//a[@class = "promotion-item__link-container"]') %>% 
+        html_attr('href')
+      
+      Sys.sleep(runif(1,1,3))	#<- tiempo de espera generando un numero aleatorio
+      
+      tibble(Nombre,
+             Precio_antiguo,
+             Precio_oferta,
+             Envio,
+             vendedor,
+             URL)
+    }) 
+}
+
+datos_mercado_libre <- scraping()
+
+--------
+SELENIUM
+--------
+library(RSelenium)
+Selenium se utiliza para realizar web scraping dinamico
+para utilizar selenium se necesita (1) navegador web, (2) webdriver de acuerdo al navegador y (3) Java
+se debe actualizar el webdriver constantemente <- yo uso ChromeDriver version 104 (depende del navegador)
+
+#CONEXION A GOOGLE CHROME
+system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)	<- finalizar procesos Java
+driver <- RSelenium::rsDriver(browser = "chrome", 				<- conectarse a traves de google chrome
+                              chromever = "104.0.5112.79")
+remote_driver <- driver[["client"]]							<- conectarse a la interfaz de usuario
+
+#WEB SCRAPING
+remote_driver$navigate("https://www.santander.cl/cotizador-web/")		<- conectar la pagina web
+
+remote_driver$findElement(using = 'xpath',
+                          value = '//select[@id = "marcas"]/option[@value = "100"]')$clickElement()	<- seleccionar elemento 100 en la pagina web
+
+df <- remote_driver$findElement(using = 'xpath',
+                          value = '//select[@id = "marcas"]')$selectTag()	<-me trae todos los elementos dentro de un select
+tibble(				<- puedo crear un dataframe a partir del selectTag()
+	Marca = df$text,
+	ID_MARCA = df$value
+)
+
+LISTA_MODELOS <- remote_driver$findElement(using = 'id',			<- elementos de modelos
+                                          value = 'modelos')$selectTag()
+
+ID_MODELO <- tibble(Nombre_modelo = LISTA_MODELOS$text,			<- crea un data frame y luego trae el valor de un modelo en particular
+                    value_modelo  = LISTA_MODELOS$value) %>% 
+  filter(Nombre_modelo == 'RENEGADE') %>% 
+  pull(value_modelo)
+
+remote_driver$findElement(using = 'xpath',					<- cambiar el valor en la pagina web
+                          value = paste0('//select[@id = "modelos"]/option[@value = ',ID_MODELO,']'))$clickElement()
+
+remote_driver$findElement(using = 'id',						<- cambiar el año en la pagina web, value se puede escribir simple porque es id
+                          value = 'ano')$sendKeysToElement(list('2022')) <- se usa sendKeyToElement(list()) porque es un input
+
+remote_driver$findElement(using = 'id',						<- cambiar de pagina
+                          value = 'siguiente1')$clickElement()
+
+for (i in RUT %>% str_split('') %>% unlist()) {					<- ingresar el rut digito por digito
+  remote_driver$findElement(using = 'id',
+                            value = 'rutCotizanteDueno')$sendKeysToElement(list(i))
+  Sys.sleep(runif(1,0.1,0.3))
+}
+
+if(SEXO == "Masculino"){								<- ingresar sexo
+  remote_driver$findElement(using = 'xpath', value = '//label[@for="sexo:0"]')$clickElement()
+}else{
+  remote_driver$findElement(using = 'xpath', value = '//label[@for="sexo:1"]')$clickElement()
+}
+
+for (i in EMAIL %>% str_split("") %>% unlist()) {				<- ingresar email
+  remote_driver$findElement(using = 'id',
+                            value = 'email')$sendKeysToElement(list(i))
+  Sys.sleep(runif(1,0.1,0.3))
+}
+
+for (i in TELEFONO %>% str_split("") %>% unlist()) {				<- ingresar el telefeno
+  remote_driver$findElement(using = 'id',
+                            value = 'telefono')$sendKeysToElement(list(i))
+  Sys.sleep(runif(1,0.1,0.3))
+}
+
+remote_driver$findElement(using = 'id',
+                          value = 'siguiente2_1')$clickElement()
+
+#GENERAR LA TABLA DE DATOS
+tabla <- remote_driver$findElement(using = "id",
+                          value = "matriz")$getElementAttribute('innerHTML')[[1]] %>% 	<- trae los elementos en formato html
+  read_html()
+
+precios <- tabla %>%		<- obtener los precios
+  html_table() %>% 
+  map_dfc(.f = function(x){					<- mapa en columnas
+    x %>% 
+      select(str_subset(names(.),'Deducible'))		<- encuentra la columna cuyo nombre contenga Deducible
+  }) %>% 
+  filter(`Deducible 0 UF` != 'Sin Producto')
+
+Compañia <- remote_driver$findElement(using = "xpath",	<- trae las compañias
+                          value = '//div[@class = "column-table40"]')$getElementAttribute('innerHTML')[[1]] %>% 
+  read_html() %>% 
+  html_elements(xpath = '//tr[@class = "filaMatriz"]/td[1]/img') %>% 
+  html_attr('alt') %>% 
+  tibble(Compañia = .) %>% 
+  mutate(Compañia = Compañia %>% str_trim())
+
+precios %>% 		<- unir base precios con compañia
+  add_column(Compañia)
+		
