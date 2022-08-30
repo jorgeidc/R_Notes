@@ -1,0 +1,22 @@
+--------------------
+MACHINE LEARNING - R
+--------------------
+#HERRAMIENTAS PARA BIG DATA
+1. Hadoop
+	framework open source para almacenar datos y ejecutar aplicaciones en clusters de computadores
+	almacenamiento masivo, procesamiento y capacidad de manejar tareas de forma practicamente ilimitada
+
+2. Amazon Web Services
+	proveedor de servicios de almacenamiento, aplicaciones moviles, bases de datos y otros en la nube
+
+3. Apache Spark
+	primer software open source con programacion distribuida (el trabajo se distribuye en clusters que trabajan como uno)
+	se pueden programar aplicaciones usando diferentes lenguajes como Java, Scala, Python o R
+
+#HERRAMIENTAS PARA DATA MINING
+1. R (estadistico)
+2. Python (informatico)
+
+#HERRAMIENTAS DE VISUALIZACION: BUSINESS INTELLIGENCE
+1. Power BI
+2. Tableau	
